@@ -90,7 +90,7 @@ transition_priors = ExponentialTransitionPriors(p_ei = 1 - exp(log(1-0.9)/3),
                                                 p_ir_ess = 10)
 
 sampling_control = SamplingControl(seed = 123123, 
-                                   n_cores = 8,
+                                   n_cores = 16,
                                    algorithm="Beaumont2009",
                                    list(batch_size = 10000,
                                         epochs = 1e6,
@@ -110,7 +110,7 @@ runtime1 = system.time(result1 <- SpatialSEIRModel(data_model,
                                                    sampling_control,
                                                    samples = 1000,
                                                    verbose = 0))
-saveRDS(result1, file = "nonlinearfit.RDS")
+saveRDS(result1, file = "./ModelCache/nonlinearfit.RDS")
 
 # Reasonable intensity
 runtime2 = system.time(result2 <- SpatialSEIRModel(data_model,
@@ -122,7 +122,7 @@ runtime2 = system.time(result2 <- SpatialSEIRModel(data_model,
                                                    sampling_control,
                                                    samples = 1000,
                                                    verbose = 0))
-saveRDS(result2, file = "seasonalfit.RDS")
+saveRDS(result2, file = "./ModelCache/seasonalfit.RDS")
 
 # runtime2 = system.time(result2 <- SpatialSEIRModel(data_model2,
 #                                                    exposure_model_1,
@@ -143,8 +143,11 @@ plot(apply(eta, 1, mean))
 simulations1 <- epidemic.simulations(result1, replicates = 50)
 simulations2 <- epidemic.simulations(result2, replicates = 50)
 
-bf <- compareModels(list(result1, result2))
+saveRDS(simulations1, "./ModelCache/sim1.RDS")
+saveRDS(simulations2, "./ModelCache/sim2.RDS")
 
+bf <- compareModels(list(result1, result2))
+saveRDS(bf, "./ModelCache/bf.RDS")
 
 plotPosteriorPredictive = function(simulations, obs_count, main, xlab = "Time Index", compartment = "I_star")
 {
@@ -196,7 +199,10 @@ Year_cum <- function(simulations, obs_count, main, xlab = "Time Index", compartm
 
 
 
-simulations1.R0 <- ComputeR0(simulations1, cores = 8)
+simulations1.R0 <- ComputeR0(simulations1, cores = 16)
+simulations2.R0 <- ComputeR0(simulations2, cores = 16)
+saveRDS(simulations1.R0, "./ModelCache/R0_mod1.RDS")
+saveRDS(simulations2.R0, "./ModelCache/R0_mod2.RDS")
 
 plotR0 = function(simulations, main)
 {
